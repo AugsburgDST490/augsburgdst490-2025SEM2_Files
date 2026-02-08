@@ -1,0 +1,131 @@
+---
+title: "Day 7 Homework, DST 490"
+author: "ENTER YOUR NAME HERE"
+date: "2026-02-08"
+format:
+  html:
+    embed-resources: true
+editor: source
+---
+
+```{r}
+#| echo: false
+#| message: false
+
+library(tidyverse)
+
+# Load in datasets you will need when rendering the file.
+
+# Unemployment and education data from the USDA. See day07_README.md for data sources
+
+# Name of the uemployment file
+unemployment_file <- "Unemployment.xlsx"
+
+unemployment <- readxl::read_excel(unemployment_file,
+                                   skip = 4,
+                                   sheet = 'UnemploymentMedianIncome')
+
+# Name of the file to read in:
+education_file <- "Education.xlsx"
+
+
+education <- readxl::read_excel(education_file ,
+                                skip = 3,
+                                sheet = 'Education 1970 to 2022')
+
+```
+
+Link to google doc for instructions: [LINK](https://docs.google.com/document/d/1KfKKnusjZ4H2zL1x9caBJSl-QA5b4rHosojLG1ITQM0/edit?usp=sharing)
+
+
+
+<div style="background-color: #f0f8ff; border-left: 5px solid #007acc; padding: 10px;">
+## (20 points) Code of Ethics
+I'm interested in understanding your process for completing all the questions in this assignment. Please tell me about the tools and resources—including any use of AI—that helped you with your work. Please remember to follow the outlined [Code of Ethics](https://docs.google.com/document/d/1lMvzPTGUAaMnH0KPibShQ1ualuo8uqICCexkh8zmsW8/edit?usp=sharing).  Because our understanding of how to work with AI tools is emerging, please err on the side of including too much detail rather than too little.
+
+
+TYPE YOUR RESPONSE HERE
+
+</div>
+
+
+
+## (10 points) 1. Reading Advanced R
+Read [Chapter 9 of Advanced R by Wickham](https://adv-r.hadley.nz/functionals.html). What did you learn about functionals and what questions do you still have about them?
+
+TYPE YOUR RESPONSE HERE
+
+## (20 points) 2. Functional programming for Hennepin County
+Discuss with your Hennepin County project group: how do you foresee yourself using nest, map, and functions on the dataset? Assign someone to try it out to see if they can get some progress!
+
+
+TYPE YOUR RESPONSE HERE
+
+
+## (20 points) 3. Average unemployment workflow
+
+In class we computed the average unemployment for each FIPS code. Instead, start with the `unemployment` dataset to write a workflow that computes the average unemployment for each state.
+
+```{r}
+# TYPE YOUR RESPONSE HERE
+
+# Be sure to test your output!
+```
+
+## (15 points) 4. Recreate this plot
+From `joined_dataset`, recreate this exact plot shown here in the [assignment instructions](https://docs.google.com/document/d/1KfKKnusjZ4H2zL1x9caBJSl-QA5b4rHosojLG1ITQM0/edit?usp=sharing).
+ 
+
+
+```{r}
+# TYPE YOUR RESPONSE HERE
+
+# Be sure to test your output!
+```
+
+## (40 points) 5. New visualization for state unemployment data
+Using the `joined_dataset` (`unemployment_span` and `education_small` data sets) to answer the following questions:
+
+  a. First, **ON YOUR OWN**, using the joined_dataset, write a function called `state_plot` that has as its output, the average unemployment rate with an educational factor for a given state.  A sample plot is shown in the [assignment instructions](https://docs.google.com/document/d/1KfKKnusjZ4H2zL1x9caBJSl-QA5b4rHosojLG1ITQM0/edit?usp=sharing). Your plot needs to include the state as a title.
+
+For this first step, you are not allowed to utilize any additional websites or AI. I want to see what you can do on your own first - so make a good-faith effort to resolve any errors in your work. Note that the code chunk evaluation option is set to false (`#| eval: false`) so that the quarto file won't throw an error when rendering.^[If you are successful in making a visualization, then change the option from `false` to `true`.]
+
+```{r}
+#| eval: false
+#| message: false
+
+# Type your response here.
+
+```
+
+  b. Reflect on your work.  What were the errors that you received? What skills and knowledge gaps can you identify?
+
+TYPE YOUR RESPONSE HERE
+
+  c. If you have errors in your visualization, make corrections to resolve them:
+
+```{r}
+#| message: false
+
+
+# Type your response here.
+
+```
+
+  d. As you resolved the errors, what were your sources? Be sure to complete the Code of Ethics.
+    
+  e. Now I want you to modify your visualization with a different plot geom. The website [from data to viz](https://www.data-to-viz.com/) is useful for inspiration.  You may need to load / install additional libraries as needed.
+    
+```{r}
+#| message: false
+
+
+# Type your response here.
+
+```
+   
+  f. What trends do you see in the visualization? What is your explanation for these trends? 
+
+TYPE YOUR RESPONSE HERE
+
+
