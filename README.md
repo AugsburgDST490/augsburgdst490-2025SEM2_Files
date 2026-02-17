@@ -6,6 +6,7 @@
 - **To track changes in the upstream repo**, use the following command in the terminal (one time only):
 ```
 git remote add upstream https://github.com/AugsburgDST490/augsburgdst490-2025SEM2_Files.git
+git remote set-url --push upstream DISABLED # To disable upstream pushes
 ```
 
 - **To check** use the following command in the terminal:
