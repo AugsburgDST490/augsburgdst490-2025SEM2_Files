@@ -1,0 +1,200 @@
+---
+title: "DST 490 Day 11 - Maps and Geocomputation in R"
+format: gfm
+---
+
+## Preliminaries
+
+Today we will need the following packages.  You may need to install them if you don't have them yet on your local `R` installation.
+
+- `tidyverse` (per the usual)
+- `sf` (for processing spatial data)
+- `here` (for removing directories / file management issues)
+- `zipcoder` (for acquiring zipcode information)
+- `mapview` (another mapping package)
+- `tmap` (another mapping package)
+
+As a reminder, you can use `install.packages("PKGNAME")`.
+
+## Loading in a shapefile
+I've already downloading a shapefile for [zipcodes in Hennepin county](https://gis-hennepin.hub.arcgis.com/datasets/zip-codes/explore).  This is located in the `shapefiles` folder.  The following code will help you get that read in:
+
+```{r}
+#| message: FALSE
+
+# load up the packages
+library(tidyverse)
+library(sf)
+library(here)   ### Helps with file management directories
+
+
+
+# Read in the zipcode shapefile
+zips <- st_read(dsn = here::here("day11","shapefiles","Zip_Codes"), layer = "Zip_Codes")
+
+glimpse(zips)
+
+```
+
+## The zipcodeR package
+Next we will use the zipcodeR package to get a listing of all the zipcodes in Hennepin County:
+
+```{r}
+#| message: FALSE
+
+# load up the packages
+library(zipcodeR)
+
+
+# Read in the zipcodes in Hennepin County
+hennepin_zips <- search_county("Hennepin","MN")
+
+
+# Let's glimpse to see the results:
+glimpse(hennepin_zips)
+
+```
+
+
+Two things to notice: a lot of zipcodes get returned (perhaps more than we expected) and it also contains population level open data from the U.S. Census Bureau and Department of Housing & Urban Development.
+
+Next we will join in the zipcode data to our shapefile.  To maintain all the observations in the shapefile, we will use a `left_join` versus an `inner_join`. We will also use `str_extract` to get out the first three digits of the zip code:
+
+```{r}
+#| message: FALSE
+
+# make the Hennepin county zip codes a smaller dataset
+
+small_hennepin_zips <- hennepin_zips |>
+  select(zipcode,population,post_office_city)
+
+zips_pop <- zips |>
+  left_join(small_hennepin_zips,by=c("NAME_TXT"="zipcode")) |>
+  st_make_valid()
+
+```
+
+
+
+### Alternatives to leaflet (1 / 3): ggplot
+We can use `ggplot` to make a plot of the data - the benefit is that we are familiar with the structure of `ggplot`:
+
+```{r}
+#| message: FALSE
+
+ggplot(zips_pop) +
+  geom_sf(aes(fill = population)) 
+```
+
+### Alternatives to leaflet (2 / 3): mapview
+The [mapview package](https://r-spatial.github.io/mapview/index.html) is an alternative that allows for both static and interactive maps. The good part is that we don't need to reproject the data - that is already taken into consideration. The code is structured similar to `ggplot`:
+
+```{r}
+#| message: FALSE
+
+library(mapview)
+
+# Compare the two plots:
+zips_pop |>
+  mapview()
+
+zips_pop |>
+  mapview(zcol = "population")   # Variable name needs to be in quotes!
+```
+
+The benefit to mapview is that you can "print the map" (or effectively a screenshot) of the image using the `mapshot` command. More information on how to do that is here: [LINK](https://r-spatial.github.io/mapview/reference/mapshot.html)
+
+### Alternatives to leaflet (3 / 3): tmap
+The third option is the [tmap package](https://r-tmap.github.io/tmap/).  Similar to `mapview`, it has a structure consistent with `ggplot`, but doesn't have some of the fancy stylings like `ggplot`.
+
+```{r}
+#| message: FALSE
+
+library(tmap)
+
+# Compare the two plots:
+tm_shape(zips_pop) + 
+  tm_polygons()
+
+tm_shape(zips_pop) + 
+  tm_polygons("population")   # Note the name of the variable in quotes
+```
+
+
+## tidycensus
+The R package [tidycensus](https://walker-data.com/tidycensus/index.html) has information at the census tract level from the American Community Survey or the Decennial census. Read through the basic usage of this package: [LINK](https://walker-data.com/tidycensus/articles/basic-usage.html).
+
+You will need to get a free API key: [http://api.census.gov/data/key_signup.html](http://api.census.gov/data/key_signup.html)
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+
+### Get variables from 2020 from the American Community Survey
+library(tidycensus)
+acs_var_2020 <- load_variables(2020, "acs5")
+
+names(acs_var_2020)
+```
+
+The `acs_var_2020` has the following variables:
+
+  - `name`: The code in the ACS survey to refer to a particular variable
+  - `label`: 
+  - `concept`: What is being measured.  This may be most useful to you.
+  - `geography`: Level of spatial organization.
+
+Let's take a look at all the distinct listings for each variable:
+```{r}
+#| message: FALSE
+
+acs_var_2020$name |> n_distinct()
+acs_var_2020$label |>  n_distinct()
+acs_var_2020$concept |> n_distinct()
+acs_var_2020$geography |> n_distinct()
+
+acs_var_2020$geography |> unique()
+
+```
+
+Wow! There are a lot of variables. One way to filter through the data is with the census tract (most closely aligned with what the scale of the project).
+
+```{r}
+acs_var_2020_tract <- acs_var_2020 |>
+   filter(geography == "tract")
+```
+
+One variable of interest is `B22001_001`, which is the following:
+
+```{r}
+acs_var_2020_tract |>
+  filter(name == "B22001_001") |> 
+  glimpse()
+```
+
+To acquire that variable for Hennepin County census tracts, we need to get the variable `name`:
+
+```{r}
+hennepin_60 <- get_acs(geography = "tract",
+                    variables = c(snap_60 = "B22001_001"),
+                    state = "MN",
+                    county = "Hennepin",
+                    year = 2020
+                    )
+
+glimpse(hennepin_60)
+```
+
+Awesome!  Now we have the estimate of residents in each census tract, aged 60+ who are receiving SNAP benefits.
+
+`tidycensus` is a great resource to quickly access data and reports from the U.S.Census Bureau
+
+
+**YOUR TURN:** In day 10 I provided a geoJSON dataset of census tracts in Hennepin county.  Join that data to `hennepin_60` to make a chloropleth map of residents 60+ receiving SNAP benefits in each census data tract.
+
+```{r}
+#| message: FALSE
+
+# TYPE YOUR RESPONSE HEERE
+```
+
